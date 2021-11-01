@@ -929,16 +929,19 @@ import { coolify } from '@coolify';
 // mocking utils
 import { mocked } from 'ts-jest/utils';
 
+// jest mock but TS doesn't know that it is a mock yet.
 jest.fn('@coolify', () => ({
   coolify: jest.fn(),
 }));
 
+// mocked just changes the type for us so TS knows that this is a jest mock.
 const mockedCoolify = mocked(coolify);
 
 describe('do cool thing', () => {
   const mockCoolThing = 'cool';
 
   beforeEach(() => {
+    // TS will recognize mockReturnValue since mockedCoolify is of type Jest.Mocked (or whatever the type is)
     mockedCoolify.mockReturnValue(mockCoolThing);
   });
 
