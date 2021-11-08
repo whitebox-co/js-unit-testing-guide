@@ -520,7 +520,7 @@ You can have multiple expects as long as they address the same concern.
 **:(**
 
 ```js
-it('should process the order save it to the datbase and trigger the webhook', () => {
+it('should process the order and save it to the database and trigger the webhook', () => {
     const response = api.processOrders(order);
   
     // here we are checking both that data was inserted into the database AND to the webhook was triggered
@@ -535,13 +535,13 @@ it('should process the order save it to the datbase and trigger the webhook', ()
 
 ```js
 it('should trigger the process orders webhook', () => {
-	const resposne = api.processOrders(order);
+	const response = api.processOrders(order);
 	expect(mockOrderWebhook.pushUpdate).toHaveBeenCalledWith(order);
 	expect(mockLogInfo).toHaveBeenCalledWith(`Publishing webhook for ${order.id}`);
 });
 
 it('should insert the order record into the database', () => {
-	const resposne = api.processOrders(order);
+	const response = api.processOrders(order);
 	expect(orderFetcher.getOrder(order.id)).toEqual(order);
 });
 ```
