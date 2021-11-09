@@ -100,7 +100,7 @@ All the following examples assume the usage of the [Jasmine](http://jasmine.gith
 
 ---------------------------------------
 
-### Whenever possible, use TDD
+### Consider using TDD 
 
 TDD is a _design process_, not a testing process. TDD is a robust way of designing software components ("units") interactively so that their behaviour is specified through unit tests.
 
@@ -515,24 +515,34 @@ The handy `.only` function used in the example above allows you to execute only 
 
 If a method has several end results, each one should be tested separately. Whenever a bug occurs, it will help you locate the source of the problem.
 
+You can have multiple expects as long as they address the same concern.
+
 **:(**
 
 ```js
-it('should send the profile data to the server and update the profile view properly', () => {
-  // expect(...)to(...);
-  // expect(...)to(...);
+it('should process the order and save it to the database and trigger the webhook', () => {
+    const response = api.processOrders(order);
+  
+    // here we are checking both that data was inserted into the database AND to the webhook was triggered
+    expect(mockOrderWebhook.pushUpdate).toHaveBeenCalledWith(order);
+    expect(mockLogInfo).toHaveBeenCalledWith(`Publishing webhook for ${order.id}`);
+    
+    expect(orderFetcher.getOrder(order.id)).toEqual(order);
 });
 ```
 
 **:)**
 
 ```js
-it('should send the profile data to the server', () => {
-  // expect(...)to(...);
+it('should trigger the process orders webhook', () => {
+	const response = api.processOrders(order);
+	expect(mockOrderWebhook.pushUpdate).toHaveBeenCalledWith(order);
+	expect(mockLogInfo).toHaveBeenCalledWith(`Publishing webhook for ${order.id}`);
 });
 
-it('should update the profile view properly', () => {
-  // expect(...)to(...);
+it('should insert the order record into the database', () => {
+	const response = api.processOrders(order);
+	expect(orderFetcher.getOrder(order.id)).toEqual(order);
 });
 ```
 
