@@ -27,6 +27,7 @@ This is a living document, **new ideas are always welcome**. Contribute: fork, c
   + [When applying TDD, always make small steps in each test-first cycle](#when-applying-tdd-always-make-small-steps-in-each-test-first-cycle)
   + [Test the behaviour, not the internal implementation](#test-the-behaviour-not-the-internal-implementation)
   + [Don't mock everything](#dont-mock-everything)
+  + [Keep mock implementations of dependencies within the describe blocks](#keep-mock-implementations-of-dependencies-within-the-describe-blocks)
   + [Create new tests for every defect](#create-new-tests-for-every-defect)
   + [Don't write unit tests for complex user interactions](#dont-write-unit-tests-for-complex-user-interactions)
   + [Test simple user actions](#test-simple-user-actions)
@@ -831,6 +832,98 @@ In particular, consider using the "real" version of the objects if:
 + the speed of execution of the tests stays *within the limits you fixed*
 
 • [Back to ToC](#-table-of-contents) •
+
+### Keep mock implementations of dependencies within the describe blocks
+When mocking dependencies, the `jest.mock` should only be the initial mock of that specific dependency. It should not contain any further implementation details/mocks.
+
+**:(**
+```ts
+import { myFunction } from './my-function';
+import { Foo } from 'dependency';
+import { mocked } from 'ts-jest/utils';
+
+const mockBar = jest.fn().mockReturnValue(true);
+jest.mock('dependency', () => ({
+  Foo: jest.fn().mockImplementation(() => ({
+    bar: mockBar
+  })),
+}));
+
+describe('myFunction', () => {
+  it('should do a thing.', () => {
+    // assume the internal implementation of myFunction simply returns Foo.bar
+    expect(myFunction()).toBe(true);
+  });
+});
+```
+
+**:)**
+```ts
+import { myFunction } from './my-function';
+import { Foo } from 'dependency';
+import { mocked } from 'ts-jest/utils';
+
+jest.mock('dependency', () => ({
+  Foo: jest.fn(),
+}));
+
+const mockedFooClass = mocked(Foo);
+
+describe('myFunction', () => {
+  const mockFooInstance = { bar: jest.fn() }
+  
+  beforeEach(() => {
+    mockFooInstance.bar.mockReturnValue(true);
+    mockedFooClass.mockImplentation(() => mockFooInstance);
+  });
+
+  it('should do a thing.', () => {
+    // assume the internal implementation of myFunction simply returns Foo.bar
+    expect(myFunction()).toBe(true);
+  });
+});
+```
+
+### When mocking a class, use the mocked instance instead of mocking methods directly
+When mocking a class and needing to mock a method on that class that is later used in a test, use a mock object to be the instance of the class, rather than mocking the specific method name.
+
+**:(**
+```ts
+const mockedFooClass = mocked(Foo);
+
+describe('myFunction', () => {
+  const mockBar = jest.fn()
+  
+  beforeEach(() => {
+    mockedFooClass.mockImplementation(() => ({ bar: mockBar }));
+    mockBar.mockReturnValue(true);
+  })
+
+  it('should be called with blah', () => {
+    myFunction('blah');
+    expect(mockBar).toHaveHaveBeenCalledWith('blah');
+  });
+})
+```
+
+**:)**
+```ts
+const mockedFooClass = mocked(Foo);
+
+describe('myFunction', () => {
+  const mockFooInstance = { bar: jest.fn() };
+  
+  beforeEach(() => {
+    mockedFooClass.mockImplementation(() => mockFooInstance);
+    mockFooInstance.bar.mockReturnValue(true);
+  })
+
+  it('should be called with blah', () => {
+    myFunction('blah');
+    expect(mockFooInstance.bar).toHaveHaveBeenCalledWith('blah');
+  });
+})
+```
 
 ### Create new tests for every defect (FOR REALSIES NOT KIDDING!!!!!)
 
