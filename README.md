@@ -28,6 +28,7 @@ This is a living document, **new ideas are always welcome**. Contribute: fork, c
   + [Test the behaviour, not the internal implementation](#test-the-behaviour-not-the-internal-implementation)
   + [Don't mock everything](#dont-mock-everything)
   + [Keep mock implementations of dependencies within the describe blocks](#keep-mock-implementations-of-dependencies-within-the-describe-blocks)
+  + [When mocking a class, use the mocked instance instead of mocking methods directly](#when-mocking-a-class-use-the-mocked-instance-instead-of-mocking-methods-directly)
   + [Create new tests for every defect](#create-new-tests-for-every-defect)
   + [Don't write unit tests for complex user interactions](#dont-write-unit-tests-for-complex-user-interactions)
   + [Test simple user actions](#test-simple-user-actions)
